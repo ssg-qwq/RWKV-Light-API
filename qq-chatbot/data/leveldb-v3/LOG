@@ -1406,3 +1406,8 @@
 00:15:35.135287 table@remove removed @354
 00:15:35.135330 table@remove removed @349
 00:15:35.135549 table@remove removed @343
+01:34:42.809653 memdb@flush N·155 S·31KiB
+01:34:42.825466 memdb@flush created L0@359 N·155 S·19KiB "\x00p\xe4\x90,v5976":"\xfe\xd3\xf8\xd6,v5984"
+01:34:42.825492 version@stat F·[1 1] S·883KiB[19KiB 863KiB] Sc·[0.25 0.01]
+01:34:42.831625 memdb@flush committed F·1 T·21.808681ms
+01:34:42.831684 journal@remove removed @355

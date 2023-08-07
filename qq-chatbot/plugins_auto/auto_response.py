@@ -5,6 +5,7 @@ from rwkv_interface import chatbot, temp_conversations
 import time
 import random
 import re
+import os
 
 
 def is_number(s):
@@ -18,6 +19,11 @@ def is_number(s):
 class AutoResponse(Plugin):
     already_speak = False
     listen_group = 368175492
+
+    knowledge_hist_len = 10
+    avoid_bot_ids = ["1875153583"]
+    avoid_times = 3
+    knowledge_prob=3
 
     async def handle(self) -> None:
         print("group:", self.event.group_id, type(self.event.group_id))
@@ -71,6 +77,7 @@ class AutoResponse(Plugin):
                 await self.event.reply(f"alpha_frequency={arg}")
         # 在群聊内说话逻辑
         elif int(self.event.group_id) == self.listen_group:
+            rand=random.randint(0, 100) < random.randint(1, 20)
             if "*+++" in msg:
                 if len(temp_conversations) > 0:
                     chatbot.setup_prompt(chatbot.conversation2text(temp_conversations))
@@ -93,7 +100,7 @@ class AutoResponse(Plugin):
             elif (
                 self.bot.config.nickname in self.event.message.get_plain_text()
                 or str(self.bot.config.bot_id) in self.event.message
-                or random.randint(0, 100) < random.randint(1, 20)
+                or rand
             ):
                 current_time = time.time()
                 local_time = time.localtime(current_time)
@@ -140,6 +147,9 @@ class AutoResponse(Plugin):
                         + response_conversation()
                     )
                     temp_conversations.clear()
+                # 记录历史
+                if rand or random.randint(0, 100) <=AutoResponse.knowledge_prob:
+                    self.add_hist2dataset()
             else:
                 current_time = time.time()
                 local_time = time.localtime(current_time)
@@ -217,3 +227,21 @@ class AutoResponse(Plugin):
         result = re.sub(pattern, replace_function, input_str)
 
         return result
+
+    def add_hist2dataset(self, dataset_path="./memory.txt"):
+        print("Add Memory...")
+        with open(dataset_path, "a", encoding="utf-8") as file:
+            cs = chatbot.conversation_hist + temp_conversations
+            memory = (
+                cs[-AutoResponse.knowledge_hist_len: ]
+                if len(cs) > AutoResponse.knowledge_hist_len
+                else cs
+            )
+            count = 0
+            for c in memory:
+                for id in AutoResponse.avoid_bot_ids:
+                    if id in c.character or id in c.text:
+                        count += 1
+            if count < AutoResponse.avoid_times:
+                memory = f"========================\n{chatbot.conversation2text(memory)}========================\n\n\n"
+                file.write(memory)
