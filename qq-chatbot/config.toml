@@ -1,0 +1,31 @@
+# 这里是任意未被使用的键名
+superuser = 870326915
+bot_id = 1990167809
+nickname = "琉璃"
+
+[bot]
+plugin_dirs = ["plugins_auto"]
+# plugin_dirs = ["plugin_maintenance"]
+adapters = ["alicebot.adapter.cqhttp", "alicebot.adapter.apscheduler"]
+# adapters = ["alicebot.adapter.mirai", "alicebot.adapter.apscheduler"]
+
+
+[adapter.apscheduler]
+scheduler_config = { "apscheduler.timezone" = "Asia/Shanghai" }
+
+[bot.log]
+# 这里是 AliceBot 自身日志相关的配置
+level = "INFO"
+verbose_exception = true
+
+[adapter.cqhttp]
+# 这里是 CQHTTP 适配器的配置
+adapter_type = "reverse-ws"
+host = "127.0.0.1"
+port = 8080
+url = "/cqhttp/ws"
+
+# [adapter.mirai]
+# adapter_type = "ws"
+# verify_key = "1234567890"
+# qq = 1990167809
