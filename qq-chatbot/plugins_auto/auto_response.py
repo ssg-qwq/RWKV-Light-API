@@ -23,7 +23,7 @@ class AutoResponse(Plugin):
     knowledge_hist_len = 10
     avoid_bot_ids = ["1875153583"]
     avoid_times = 3
-    knowledge_prob=3
+    knowledge_prob = 3
 
     async def handle(self) -> None:
         print("group:", self.event.group_id, type(self.event.group_id))
@@ -40,12 +40,28 @@ class AutoResponse(Plugin):
                 chatbot.reset()
                 temp_conversations.clear()
                 AutoResponse.listen_group = int(msg.split("*listengrp ")[1])
+        # 系统消息
+        elif self.event.user_id == self.bot.config.superuser and "*sys " in msg:
+            c = Conversation(
+                character=chatbot.system,
+                text=msg.split("*sys ")[1],
+                sos=chatbot.sos,
+                eos=chatbot.eos,
+            )
+            response = chatbot.chat(c)
+            await self.event.reply(response.strip())
         # 后台输出历史
         elif self.event.user_id == self.bot.config.superuser and "*hist" in msg:
             for c in chatbot.conversation_hist:
-                print(c().replace("\r\n", "\n").replace(chatbot.detect_eos, "\n"))
+                print(
+                    "conversation_hist:",
+                    c().replace("\r\n", "\n").replace(chatbot.detect_eos, "\n\n"),
+                )
             for c in temp_conversations:
-                print(c().replace("\r\n", "\n").replace(chatbot.detect_eos, "\n"))
+                print(
+                    "hist:",
+                    c().replace("\r\n", "\n").replace(chatbot.detect_eos, "\n\n"),
+                )
         # 存档
         elif self.event.user_id == self.bot.config.superuser and "*save " in msg:
             if msg.split("*save ")[1] != "":
@@ -77,11 +93,11 @@ class AutoResponse(Plugin):
                 await self.event.reply(f"alpha_frequency={arg}")
         # 在群聊内说话逻辑
         elif int(self.event.group_id) == self.listen_group:
-            rand=random.randint(0, 100) < random.randint(1, 20)
+            rand = random.randint(0, 100) < random.randint(1, 20)
             if "*+++" in msg:
                 if len(temp_conversations) > 0:
                     chatbot.setup_prompt(chatbot.conversation2text(temp_conversations))
-                response = chain_dict.思考是否发言.chain(chatbot)
+                response = chain_dict.思考是否发言.chain(chatbot,first_node=True)
                 if response is not None:
                     await self.event.reply(response.strip())
                     response_conversation = Conversation(
@@ -115,6 +131,8 @@ class AutoResponse(Plugin):
                                     match_qq=self.bot.config.bot_id,
                                 )
                             ),
+                            sos=chatbot.sos,
+                            eos=chatbot.eos,
                         )
                     )
                 else:
@@ -127,11 +145,13 @@ class AutoResponse(Plugin):
                                     match_qq=self.bot.config.bot_id,
                                 )
                             ),
-                        )
+                        ),
+                        sos=chatbot.sos,
+                        eos=chatbot.eos,
                     )
                 if len(temp_conversations) > 0:
                     chatbot.setup_prompt(chatbot.conversation2text(temp_conversations))
-                response = chain_dict.思考是否发言.chain(chatbot)
+                response = chain_dict.思考是否发言.chain(chatbot,first_node=True)
                 if response is not None:
                     await self.event.reply(response.strip())
                     response_conversation = Conversation(
@@ -148,7 +168,7 @@ class AutoResponse(Plugin):
                     )
                     temp_conversations.clear()
                 # 记录历史
-                if rand or random.randint(0, 100) <=AutoResponse.knowledge_prob:
+                if rand or random.randint(0, 100) <= AutoResponse.knowledge_prob:
                     self.add_hist2dataset()
             else:
                 current_time = time.time()
@@ -159,6 +179,8 @@ class AutoResponse(Plugin):
                         Conversation(
                             character=f"{self.event.sender.nickname}(主人)({self.event.user_id}) {time_string}",
                             text=self.event.message.get_plain_text(),
+                            sos=chatbot.sos,
+                            eos=chatbot.eos,
                         )
                     )
                 else:
@@ -166,6 +188,8 @@ class AutoResponse(Plugin):
                         Conversation(
                             character=f"{self.event.sender.nickname}({self.event.user_id}) {time_string}",
                             text=self.event.message.get_plain_text(),
+                            sos=chatbot.sos,
+                            eos=chatbot.eos,
                         )
                     )
                 for line in chatbot.conversation_hist:
@@ -200,6 +224,8 @@ class AutoResponse(Plugin):
                         return f"@{qq_number}"
                 elif "CQ:image,file=" in inner_content:
                     return "(图片表情)"
+                elif "CQ:record,file=" in inner_content:
+                    return "(语音消息)"
                 else:
                     # 否则，删除"[]"内部的内容
                     return ""
@@ -233,7 +259,7 @@ class AutoResponse(Plugin):
         with open(dataset_path, "a", encoding="utf-8") as file:
             cs = chatbot.conversation_hist + temp_conversations
             memory = (
-                cs[-AutoResponse.knowledge_hist_len: ]
+                cs[-AutoResponse.knowledge_hist_len :]
                 if len(cs) > AutoResponse.knowledge_hist_len
                 else cs
             )
@@ -245,3 +271,7 @@ class AutoResponse(Plugin):
             if count < AutoResponse.avoid_times:
                 memory = f"========================\n{chatbot.conversation2text(memory)}========================\n\n\n"
                 file.write(memory)
+
+    def reduce_newlines(self, text):
+        reduced_text = re.sub(r"\n{3,}", "\n\n", text)
+        return reduced_text

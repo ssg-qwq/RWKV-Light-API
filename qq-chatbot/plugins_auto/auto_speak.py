@@ -21,7 +21,7 @@ class AutoSpeak(Plugin):
                 chatbot.setup_prompt(
                     chatbot.conversation2text(temp_conversations)
                 )
-            response = chain_dict.思考是否发言.chain(chatbot)
+            response = chain_dict.思考是否发言.chain(chatbot,first_node=True)
             if response is not None:
                 await self.bot.get_adapter("cqhttp").send(
                     response.strip(), message_type="group", id_=R.AutoResponse.listen_group

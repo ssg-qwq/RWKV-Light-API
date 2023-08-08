@@ -1192,3 +1192,32 @@
 00:35:05.964469 version@stat F·[1 1] S·22KiB[2KiB 20KiB] Sc·[0.25 0.00]
 00:35:05.970757 memdb@flush committed F·1 T·21.784953ms
 00:35:05.970790 journal@remove removed @280
+09:05:47.185863 memdb@flush N·19 S·3KiB
+09:05:47.201073 memdb@flush created L0@286 N·19 S·2KiB "\x05>\xb5..\xee\x0eM,v435":"\xeb\xf4\x96..k\xa0d,v439"
+09:05:47.201096 version@stat F·[2 1] S·24KiB[4KiB 20KiB] Sc·[0.50 0.00]
+09:05:47.207382 memdb@flush committed F·1 T·21.43564ms
+09:05:47.207410 journal@remove removed @283
+10:32:15.620164 memdb@flush N·19 S·3KiB
+10:32:15.635526 memdb@flush created L0@288 N·19 S·1KiB "\x00\x89\xf1..(!m,v468":"\xf0\xa7\x93..&PY,v467"
+10:32:15.635547 version@stat F·[3 1] S·26KiB[5KiB 20KiB] Sc·[0.75 0.00]
+10:32:15.641728 memdb@flush committed F·1 T·21.465819ms
+10:32:15.641761 journal@remove removed @285
+10:48:18.880773 memdb@flush N·18 S·3KiB
+10:48:18.896700 memdb@flush created L0@290 N·18 S·1KiB "\x00\x19\x1b..\x98[\\,v474":"\xd4\xdd\x7f..\xe1\xe5-,v478"
+10:48:18.896821 version@stat F·[4 1] S·27KiB[7KiB 20KiB] Sc·[1.00 0.00]
+10:48:18.903758 memdb@flush committed F·1 T·22.886585ms
+10:48:18.903959 journal@remove removed @287
+10:48:18.904082 table@compaction L0·4 -> L1·1 S·27KiB Q·490
+10:48:18.916333 table@build created L1@291 N·189 S·24KiB "\x00\x19\x1b..\x98[\\,v474":"\xfe\xd3\x14..\x99\xf9\xd6,v197"
+10:48:18.916435 version@stat F·[0 1] S·24KiB[0B 24KiB] Sc·[0.00 0.00]
+10:48:18.923110 table@compaction committed F-4 S-3KiB Ke·0 D·43 T·18.985945ms
+10:48:18.923269 table@remove removed @290
+10:48:18.923313 table@remove removed @288
+10:48:18.923355 table@remove removed @286
+10:48:18.923391 table@remove removed @284
+10:48:18.923438 table@remove removed @282
+12:27:02.100968 memdb@flush N·19 S·3KiB
+12:27:02.116611 memdb@flush created L0@293 N·19 S·1KiB "\b\xf4 ..$F\xf7,v508":"\xeb\xb0$..\x02\x12\xef,v493"
+12:27:02.116688 version@stat F·[1 1] S·25KiB[1KiB 24KiB] Sc·[0.25 0.00]
+12:27:02.123196 memdb@flush committed F·1 T·22.137267ms
+12:27:02.123334 journal@remove removed @289

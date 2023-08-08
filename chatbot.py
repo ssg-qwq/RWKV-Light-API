@@ -144,6 +144,8 @@ class Chatbot:
 
         self.scroll_tokens = scroll_tokens
 
+        self.debug_count = 0
+
         # 可以动态调节的参数 初始化
         self.dynamic_settings = RWKV_Dynamic_Args(
             CHUNK_LEN=CHUNK_LEN,
@@ -302,6 +304,7 @@ class Chatbot:
         Returns:
             str : response_str
         """
+        self.debug_count += 1
         if mark_before_action:
             self.state_before_action = self.now_state
         if self.debug_mode:
@@ -394,11 +397,12 @@ class Chatbot:
                 break
         # 处理状态
         response_conversation = Conversation(
-            to_char, send_msg.replace(self.detect_eos, ""), sos=self.sos,eos=self.eos
+            to_char, send_msg.replace(self.detect_eos, ""), sos=self.sos, eos=self.eos
         )
         if mark_before_action:
             self.last_conversation_index = len(self.conversation_hist)
-        self.conversation_hist.append(conversation)
+        if conversation() != "":
+            self.conversation_hist.append(conversation)
         self.conversation_hist.append(response_conversation)
         while self.scroll_tokens != 0 and self.calc_ctx() > self.scroll_tokens:
             self.forget()
@@ -420,7 +424,9 @@ class Chatbot:
             _, self.now_state = self.RWKV_infer(
                 self.encode(insert_prompt), self.state_before_action
             )
-        self.conversation_hist.append(Conversation(only_text=True, text=insert_prompt))
+            self.conversation_hist.append(
+                Conversation(only_text=True, text=insert_prompt)
+            )
         self.last_conversation_index = len(self.conversation_hist)
 
     def forget(self):
@@ -570,7 +576,7 @@ if __name__ == "__main__":
     GEN_alpha_frequency = 0.2
     GEN_alpha_presence = 0.2
     character_name = "琉璃"
-    character_name = 'assistant'
+    character_name = "assistant"
     # sos = "<|st|>"
     # eos = "<|ed|>\n"
     # detect_eos = "<|ed|>"
@@ -578,7 +584,7 @@ if __name__ == "__main__":
     eos = "\n\n"
     detect_eos = "\n\n"
     # vocab="rwkv_vocab_v20230424"
-    vocab="rwkv_vocab_v20230424addeos"
+    vocab = "rwkv_vocab_v20230424addeos"
     # character_name='测试'
     chatbot = Chatbot(
         model_path=model_path,
@@ -591,7 +597,7 @@ if __name__ == "__main__":
         sos=sos,
         eos=eos,
         detect_eos=detect_eos,
-        vocab=vocab
+        vocab=vocab,
     )
     to = None
     while True:
