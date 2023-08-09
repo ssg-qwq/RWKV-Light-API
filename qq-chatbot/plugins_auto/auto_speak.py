@@ -13,6 +13,7 @@ class AutoSpeak(Plugin):
     trigger = "interval"
     trigger_args = {"seconds": 180}
 
+
     async def handle(self) -> None:
         if not R.AutoResponse.already_speak:
             print("自动对话 测试")
@@ -42,7 +43,7 @@ class AutoSpeak(Plugin):
             self.event.adapter.name == "apscheduler"
             and type(self) == self.event.plugin_class
         ):
-            next_seconds = random.randint(45, 225) + int(random.gauss(0, 50))
+            next_seconds = random.randint(45, R.AutoResponse.time_upbound) + int(random.gauss(0, 50))
             print("next respnse seconds:", next_seconds)
             next_seconds = np.clip(next_seconds, 5, None)
             self.trigger_args["seconds"] = int(next_seconds)

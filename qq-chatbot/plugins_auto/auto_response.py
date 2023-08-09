@@ -19,11 +19,15 @@ def is_number(s):
 class AutoResponse(Plugin):
     already_speak = False
     listen_group = 368175492
+    rand_speak_prob_max=10
 
     knowledge_hist_len = 10
     avoid_bot_ids = ["1875153583"]
-    avoid_times = 3
+    avoid_times = 3 #屏蔽bot出现超过n次则不记忆
     knowledge_prob = 3
+
+    
+    time_upbound=225
 
     async def handle(self) -> None:
         print("group:", self.event.group_id, type(self.event.group_id))
@@ -37,9 +41,15 @@ class AutoResponse(Plugin):
         # 更改监听群聊
         elif self.event.user_id == self.bot.config.superuser and "*listengrp " in msg:
             if is_number(msg.split("*listengrp ")[1]):
-                chatbot.reset()
-                temp_conversations.clear()
                 AutoResponse.listen_group = int(msg.split("*listengrp ")[1])
+        # 更改发言概率
+        elif self.event.user_id == self.bot.config.superuser and "*prob " in msg:
+            if is_number(msg.split("*prob ")[1]):
+                AutoResponse.rand_speak_prob_max = int(msg.split("*prob ")[1])
+        # 更改发言概率
+        elif self.event.user_id == self.bot.config.superuser and "*upbound " in msg:
+            if is_number(msg.split("*upbound ")[1]):
+                AutoResponse.time_upbound = int(msg.split("*upbound ")[1])
         # 系统消息
         elif self.event.user_id == self.bot.config.superuser and "*sys " in msg:
             c = Conversation(
@@ -93,7 +103,7 @@ class AutoResponse(Plugin):
                 await self.event.reply(f"alpha_frequency={arg}")
         # 在群聊内说话逻辑
         elif int(self.event.group_id) == self.listen_group:
-            rand = random.randint(0, 100) < random.randint(1, 20)
+            rand = random.randint(0, 100) < random.randint(1, AutoResponse.rand_speak_prob_max)
             if "*+++" in msg:
                 if len(temp_conversations) > 0:
                     chatbot.setup_prompt(chatbot.conversation2text(temp_conversations))
@@ -145,9 +155,9 @@ class AutoResponse(Plugin):
                                     match_qq=self.bot.config.bot_id,
                                 )
                             ),
-                        ),
                         sos=chatbot.sos,
-                        eos=chatbot.eos,
+                        eos=chatbot.eos
+                        )
                     )
                 if len(temp_conversations) > 0:
                     chatbot.setup_prompt(chatbot.conversation2text(temp_conversations))
@@ -196,8 +206,6 @@ class AutoResponse(Plugin):
                     print(line())
                 print(self.event.message)
                 AutoResponse.already_speak = False
-                if len(temp_conversations) > 18:
-                    temp_conversations.pop(0)
 
     async def rule(self) -> bool:
         if self.event.adapter.name != "mirai" and self.event.adapter.name != "cqhttp":
