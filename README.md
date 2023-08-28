@@ -1,11 +1,16 @@
 # ☁️RWKV-Light-API
 A Lightweight and Extensible RWKV API for Inference
 
+关于RWKV：
+- https://github.com/BlinkDL/RWKV-LM
+- https://github.com/BlinkDL/RWKV-LM
+
 RWKV-Runner不可编辑？ChatRWKV功能太少？那么来尝试一下RWKV-Light-API吧。
 
 提示：适合初步了解RWKV，并希望能在它的基础上进行一定的扩展或研究的人群。
 
-它能做什么？
+---
+# 它能做什么？
 
 · 花式聊天
 
