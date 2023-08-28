@@ -31,3 +31,26 @@ python chatbot.py
 # 关于扩展的若干tips
 1. 对话使用Conversation类来存储，便于修改
 2. 在chatbot类中，会用conversation_hist变量来存储历史的对话内容，并与state对齐
+
+---
+# 对话说明
+```
+        直接输入内容 --> 和机器人聊天，用\\n代表换行
+        + --> 让机器人换个回答
+        /reset --> 重置对话;/reset [角色名]--> 重置对话，并且换角色
+        /char [角色名] [消息] 作为某个角色发起一轮对话。
+        /listen [角色名] 让某个角色说一段话
+        /sys [消息] 发送一个系统消息
+        /save [存档名] 存档；/svlist 显示目前已有存档
+        /load [存档名] 读档
+        /set -[变量名] [变量值] 更改变量，可选：temp,top_p,alpha_presence,alpha_frequency
+        /args 查看当前变量
+        /cancel 取消上一轮对话; /hist 显示对话历史
+        /ctx 计算当前token数
+        /add [角色名] [消息] 增加一段对话（不触发回复）
+        任何对话请求的末尾(包含/char) --to [角色名] 可以选择回复你的角色
+        /svhist 将对话历史保留为标准语料格式
+        /setup 增加任意格式上下文
+```
+---
+有时间的话，会把一些函数的说明补上（或者整理代码），如果着急，可以发PR
