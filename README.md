@@ -7,19 +7,18 @@ RWKV-Runner不可编辑？ChatRWKV功能太少？那么来尝试一下RWKV-Light
 
 ---
 部署方法：
-1.
+
 ```
 git clone https://github.com/ssg-qwq/RWKV-Light-API
 ```
-2.
 确保电脑上有torch和cuda开发环境。
-3.
+
 ```
 pip install -r requirements.txt
 ```
-4.
+
 调整代码中的配置。
-5.
+
 ```
 python chatbot.py
 ```
