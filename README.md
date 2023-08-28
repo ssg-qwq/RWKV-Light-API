@@ -12,15 +12,15 @@ RWKV-Runner不可编辑？ChatRWKV功能太少？那么来尝试一下RWKV-Light
 ---
 # 它能做什么？
 
-· 花式聊天
+- 花式聊天
 
-· 快速保存语料
+- 快速保存语料
 
-· QQ机器人
+- QQ机器人
 
-· 实现滑窗推理
+- 实现滑窗推理
 
-· 自定义langchain
+- 自定义langchain
 
 ……
 
