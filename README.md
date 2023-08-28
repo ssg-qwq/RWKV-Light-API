@@ -1,4 +1,4 @@
-# RWKV-Light-API
+# ☁️RWKV-Light-API
 A Lightweight and Extensible RWKV API for Inference
 
 RWKV-Runner不可编辑？ChatRWKV功能太少？那么来尝试一下RWKV-Light-API吧。
