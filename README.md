@@ -3,7 +3,7 @@ A Lightweight and Extensible RWKV API for Inference
 
 关于RWKV：
 - https://github.com/BlinkDL/RWKV-LM
-- https://github.com/BlinkDL/RWKV-LM
+- https://github.com/BlinkDL/RWKV-LM](https://github.com/BlinkDL/ChatRWKV
 
 RWKV-Runner不可编辑？ChatRWKV功能太少？那么来尝试一下RWKV-Light-API吧。
 
