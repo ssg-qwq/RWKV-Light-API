@@ -95,7 +95,7 @@ class Chatbot:
         load_history: str = None,  # 若读取对话存档（包括state、参数和prompt），则填入存档名（不含扩展名）
         strategy="cuda:1 bf16",  # RWKV Strategy
         prompt_path="./myprompt.py",  # 读取初始设定
-        character_name="琉璃",
+        character_name="Answer",
         states_path="./states",  # 存state的路径
         history_path="./history",  # 对话存档的路径
         system="System",  # 系统角色
@@ -573,36 +573,21 @@ class Chatbot:
 
 # test script
 if __name__ == "__main__":
-    # model_path = "./models/merge7-22-noeos-nice"
-    # model_path = "./models/merge7-22-noeos-interesting"
-    # model_path = "./models/merge7-25-noeos-nice"
-    # model_path = "./models/merge7-29-noeos-interesting"
-    # model_path = "./models/merge7-29-noeos-nice"
-    # model_path = "./models/merge7-29-noeos"
-    # model_path = "./models/merge8-5-neweos-interesting"
-    # model_path = "/home/li/MachineLr/RWKV-My-API/models/8-19interesting.pth"
-    # model_path = "/home/ssg/MachineLr/RWKV-My-API/models/RWKV-4-World-CHNtuned-7B-v1-20230709-ctx4096"
-    model_path = "/home/li/MachineLr/RWKV-My-API/models/8-21-group.pth"
-    model_path = "/home/li/MachineLr/RWKV-My-API/models/8-23ruri+trpg.pth"
-    model_path = "/home/li/MachineLr/RWKV-My-API/models/8-24ruri+trpg+tea+swear+g2.pth"
-    model_path = "/home/li/MachineLr/RWKV-My-API/models/828ruri.pth"
+    model_path = "./models/RWKV-4-World-CHNtuned-7B-v1-20230709-ctx4096"
     scroll_tokens = 0
     temp = 1
     top_p = 0.7
     GEN_alpha_frequency = 0.2
     GEN_alpha_presence = 0.2
-    character_name = "琉璃"
+    character_name = "QA"
     strategy = "cuda:0 bf16"  # RWKV Strategy
-    # character_name = "assistant"
     # sos = "<|start|>"
     # eos = "<|end|>\n"
     # detect_eos = "<|end|>"
     sos = ""
     eos = "\n\n"
     detect_eos = "\n\n"
-    # vocab="rwkv_vocab_v20230424"
-    vocab = "rwkv_vocab_v20230424addeos"
-    # character_name='测试'
+    vocab="rwkv_vocab_v20230424"
     chatbot = Chatbot(
         model_path=model_path,
         scroll_tokens=scroll_tokens,
