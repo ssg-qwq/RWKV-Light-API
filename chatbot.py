@@ -2,6 +2,7 @@ import os, copy, types, gc, sys
 from typing import Any
 import numpy as np
 import myprompt
+import time
 from prompt_toolkit import prompt
 
 try:
@@ -175,6 +176,8 @@ class Chatbot:
         /ctx 计算当前token数
         /add [角色名] [消息] 增加一段对话（不触发回复）
         任何对话请求的末尾(包含/char) --to [角色名] 可以选择回复你的角色
+        /svhist 将对话历史保留为标准语料格式
+        /setup 增加任意格式上下文
         """
         print(help_msg)
         if load_history is not None:
@@ -557,6 +560,16 @@ class Chatbot:
         init_prompt = "\n" + ("\n".join(init_prompt)).strip() + "\n\n"
         return user, bot, interface, init_prompt
 
+    def change_converlist_eos(self, conver_list, new_sos, new_eos):
+        res = []
+        for c in conver_list:
+            res.append(
+                Conversation(
+                    sos=new_sos, eos=new_eos, text=c.text, only_text=c.only_text,character=c.character
+                )
+            )
+        return res
+
 
 # test script
 if __name__ == "__main__":
@@ -564,22 +577,26 @@ if __name__ == "__main__":
     # model_path = "./models/merge7-22-noeos-interesting"
     # model_path = "./models/merge7-25-noeos-nice"
     # model_path = "./models/merge7-29-noeos-interesting"
-    # model_path = "./models/mianwa"
     # model_path = "./models/merge7-29-noeos-nice"
-    model_path = "./models/merge7-29-noeos"
+    # model_path = "./models/merge7-29-noeos"
     # model_path = "./models/merge8-5-neweos-interesting"
-    # model_path = "./models/merge8-5-neweos"
+    # model_path = "/home/li/MachineLr/RWKV-My-API/models/8-19interesting.pth"
     # model_path = "/home/ssg/MachineLr/RWKV-My-API/models/RWKV-4-World-CHNtuned-7B-v1-20230709-ctx4096"
+    model_path = "/home/li/MachineLr/RWKV-My-API/models/8-21-group.pth"
+    model_path = "/home/li/MachineLr/RWKV-My-API/models/8-23ruri+trpg.pth"
+    model_path = "/home/li/MachineLr/RWKV-My-API/models/8-24ruri+trpg+tea+swear+g2.pth"
+    model_path = "/home/li/MachineLr/RWKV-My-API/models/828ruri.pth"
     scroll_tokens = 0
     temp = 1
     top_p = 0.7
     GEN_alpha_frequency = 0.2
     GEN_alpha_presence = 0.2
     character_name = "琉璃"
-    character_name = "assistant"
-    # sos = "<|st|>"
-    # eos = "<|ed|>\n"
-    # detect_eos = "<|ed|>"
+    strategy = "cuda:0 bf16"  # RWKV Strategy
+    # character_name = "assistant"
+    # sos = "<|start|>"
+    # eos = "<|end|>\n"
+    # detect_eos = "<|end|>"
     sos = ""
     eos = "\n\n"
     detect_eos = "\n\n"
@@ -598,10 +615,11 @@ if __name__ == "__main__":
         eos=eos,
         detect_eos=detect_eos,
         vocab=vocab,
+        strategy=strategy,
     )
     to = None
     while True:
-        msg = prompt(">")
+        msg = prompt("\n>")
         msg = msg.replace("\\n", "\n").strip()
         if msg[:6].lower() == "/char ":
             char = msg[6:].split(" ")[0]
@@ -641,6 +659,15 @@ if __name__ == "__main__":
             real_msg = real_msg.strip()
             conversation = Conversation(character=char, text=real_msg, sos=sos, eos=eos)
             chatbot.add_fake_conversation(conversation)
+        elif msg[:7].lower() == "/setup ":
+            msg = msg[7:]
+            chatbot.setup_prompt(msg)
+        elif msg[:3].lower() == "/g ":
+            msg = msg[3:]
+            t = chatbot.interface
+            chatbot.interface = ""
+            chatbot.chat(Conversation(only_text=True, text=msg), to_char="")
+            chatbot.interface = t
         elif msg.lower() == "+":
             if len(chatbot.conversation_hist) != 0:
                 chatbot.regenerate(to)
@@ -689,6 +716,16 @@ if __name__ == "__main__":
         elif msg.lower() == "/hist":
             for c in chatbot.conversation_hist:
                 print(c().replace("\r\n", "\n").replace("\n\n", "\n"))
+            print(chatbot.calc_ctx())
+        elif msg.lower() == "/svhist":
+            current_time = time.time()
+            time_string = time.strftime("%m-%d %H:%M:%S", current_time)
+            name = time_string + ".txt"
+            path='savehist'
+            if not os.path.exists(path):
+                os.mkdir(path)
+            with open(os.path.join(path,name),'w',encoding='utf-8') as f:
+                f.write(chatbot.conversation2text(chatbot.change_converlist_eos(chatbot.conversation_hist,new_sos='<sos>',new_eos='<eos>\n\n')))
         elif msg.lower() == "/args":
             print(chatbot.dynamic_settings.to_string())
         else:

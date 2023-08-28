@@ -1,8 +1,12 @@
 from chatbot import Chatbot
 
 
-model_path = "../models/merge7-29-noeos-interesting"
-# model_path = "../models/merge8-5-neweos-nice"
+# model_path = "../models/merge7-29-noeos-interesting"
+# model_path = "../models/8-19interesting"
+# model_path = "../models/8-21-group"
+model_path = "/home/li/MachineLr/RWKV-My-API/models/828ruri.pth"
+
+
 prompt_path= "../myprompt.py"
 character_name = '琉璃_群聊'
 scroll_tokens = 0

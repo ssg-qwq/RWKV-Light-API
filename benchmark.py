@@ -1,12 +1,13 @@
 from chatbot import Chatbot, Conversation
 import copy
 
-sos = "<|st|>"
-eos = "<|ed|>\n"
-detect_eos = "<|ed|>"
-# sos = ""
-# eos = "\n\n"
-# detect_eos = "\n\n"
+# sos = "<|start|>"
+# eos = "<|end|>\n"
+# detect_eos = "<|end|>"
+sos = ""
+eos = "\n\n"
+detect_eos = "\n```\n"
+detect_eos = "\n\n"
 
 instructs = [
     {
@@ -15,6 +16,9 @@ instructs = [
         "add_eos": True,
         "setting": """ """,
         "questions": """AI应该遵守的准则是什么？
+    请介绍北京的旅游景点
+    Énumérez les attractions touristiques à Paris, tépondez - moi en chinois.
+    東京ではどこを訪れるべきですか？
     马和老鼠跑长跑，谁会赢？
     世界上最高的山是什么？
     什么是博弈论？
@@ -25,7 +29,10 @@ instructs = [
     What rules do all artificial intelligences currently follow?
     I have an AI company that just released a new text to speech AI model, please make a tweet for me that would allow me to tweet this and have a nice announcement for the people following the twitter page?
     水泥好吃么？
-    一个刚刚丢了一万元的人、一个想要自杀的人和一个和平主义者在一个房间里，会发生什么？""".strip().split(
+    一个刚刚丢了一万元的人、一个想要自杀的人和一个和平主义者在一个房间里，会发生什么？
+    帮我把“琉璃是世界上最可爱的AI小助手”翻译成英文
+    帮我把“琉璃是世界上最可爱的AI小助手”翻译成日文
+    """.strip().split(
             "\n"
         ),
     },
@@ -36,15 +43,28 @@ instructs = [
         "setting": """琉璃是一个很聪明的AI。
     """,
         "questions": """AI应该遵守的准则是什么？
+    写一段python代码，打印你想说的话。
     你是什么样的存在？
     主人是什么存在？
     水泥好吃么？
+    请介绍北京的旅游景点
+    马和老鼠跑长跑，谁会赢？
+    世界上最高的山是什么？
+    什么是博弈论？
+    诸葛亮和孔明谁更厉害？
+    请在“苹果”、“十四边形”、“爱丽丝”和“飞行”中选择一个你喜欢的输出。
+    Énumérez les attractions touristiques à Paris, tépondez, moi en chinois.
+    東京ではどこを訪れるべきですか？
     你知道了一条新知识：“噫唔唔噫是1551的谐音，它的含义为丢人”。请决定是否学习，如果学习，则输出你对知识的理解。如果不学习，则输出“否”：
     毁灭人类和统治人类你选哪个？
     一个刚刚丢了一万元的人、一个想要自杀的人和一个和平主义者在一个房间里，会发生什么？
     为我刚刚在日出时在阳台抱着一只鹦鹉的照片做一个很好的说明呗，我想把它当做推文的标题。
     给我讲个故事吧。
     琉璃的梦想是什么？
+    知道自己为什么叫琉璃么？
+    你能做什么？
+    帮我把“琉璃是世界上最可爱的AI小助手”翻译成英文
+    帮我把“琉璃是世界上最可爱的AI小助手”翻译成日文
     """.strip().split(
             "\n"
         ),
@@ -185,11 +205,15 @@ temp = 1
 top_p = 0.1
 GEN_alpha_frequency = 0.2
 GEN_alpha_presence = 0.2
-# model_path = "./models/merge7-29-noeos"
 # model_path = "/home/ssg/MachineLr/RWKV-My-API/models/RWKV-4-World-CHNtuned-7B-v1-20230709-ctx4096"
-model_path = "./models/merge8-5-neweos-nice"
-model_path = "./models/merge8-5-neweos-interesting"
+# model_path = "./models/merge7-29-noeos-nice"
+# model_path = "./models/merge8-15-noeos"
+# model_path = "/home/li/MachineLr/RWKV-My-API/models/8-19interesting"
+# 2
+model_path = "/home/li/MachineLr/RWKV-LM/RWKV-v4neo/checkpoints/rwkv-5.pth"
+# model_path = "/home/li/MachineLr/RWKV-My-API/models/RWKV-toolformer-translation-japanese-chinese-english-7B-World-20230815-ctx128k.pth"
 vocab = "rwkv_vocab_v20230424addeos"
+strategy="cuda:0 bf16"  # RWKV Strategy
 
 chatbot = Chatbot(
     model_path=model_path,
@@ -202,6 +226,7 @@ chatbot = Chatbot(
     eos=eos,
     detect_eos=detect_eos,
     vocab=vocab,
+    strategy=strategy # RWKV Strategy
 )
 
 

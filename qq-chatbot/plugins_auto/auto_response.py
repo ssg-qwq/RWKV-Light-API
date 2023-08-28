@@ -19,19 +19,24 @@ def is_number(s):
 class AutoResponse(Plugin):
     already_speak = False
     listen_group = 368175492
-    rand_speak_prob_max=10
+    rand_speak_prob_max = 10
 
     knowledge_hist_len = 10
     avoid_bot_ids = ["1875153583"]
-    avoid_times = 3 #屏蔽bot出现超过n次则不记忆
+    avoid_times = 3  # 屏蔽bot出现超过n次则不记忆
     knowledge_prob = 3
 
-    
-    time_upbound=225
+    time_upbound = 225
+
+    data_collection_turn = 50  # 单次存储轮数
+    data_collection_groups = [439087067, 762489654, 584182623]  # 收集数据的群聊
+    data_collection_groups_count_dict = {}
+    data_collection_groups_conversation_dict = {}
 
     async def handle(self) -> None:
         print("group:", self.event.group_id, type(self.event.group_id))
-        print("listen:", self.listen_group)
+        # print("listen:", self.listen_group)
+        print("subtype", self.event.sub_type)
         msg = self.event.message.get_plain_text()
         # 重置
         if self.event.user_id == self.bot.config.superuser and "*reset" in msg:
@@ -81,6 +86,7 @@ class AutoResponse(Plugin):
             if msg.split("*load ")[1] != "":
                 try:
                     chatbot.load_history(msg.split("*load ")[1])
+                    temp_conversations.clear()
                 except:
                     print("读取失败")
         # 设置参数
@@ -103,13 +109,76 @@ class AutoResponse(Plugin):
                 await self.event.reply(f"alpha_frequency={arg}")
         # 在群聊内说话逻辑
         elif int(self.event.group_id) == self.listen_group:
-            rand = random.randint(0, 100) < random.randint(1, AutoResponse.rand_speak_prob_max)
+            rand = random.randint(0, 100) < random.randint(
+                1, AutoResponse.rand_speak_prob_max
+            )
             if "*+++" in msg:
                 if len(temp_conversations) > 0:
                     chatbot.setup_prompt(chatbot.conversation2text(temp_conversations))
-                response = chain_dict.思考是否发言.chain(chatbot,first_node=True)
+                response = chain_dict.思考是否发言.chain(chatbot, first_node=True)
                 if response is not None:
                     await self.event.reply(response.strip())
+                    response_conversation = Conversation(
+                        character=chatbot.bot,
+                        text=response.strip(),
+                        interface=chatbot.interface,
+                        sos=chatbot.sos,
+                        eos=chatbot.eos,
+                    )
+                    AutoResponse.already_speak = True
+                    chatbot.process_reaction_end(
+                        chatbot.conversation2text(temp_conversations)
+                        + response_conversation()
+                    )
+                    temp_conversations.clear()
+            # 直接对话
+            elif (
+                int(self.event.group_id) == self.listen_group
+                and self.event.message.get_plain_text()[:2] == "**"
+            ):
+                self.append_qqmessage2list(
+                    temp_conversations, message=str(self.event.message)[2:]
+                )
+                # current_time = time.time()
+                # local_time = time.localtime(current_time)
+                # time_string = time.strftime("%H:%M:%S ", local_time)
+                # if self.event.user_id == self.bot.config.superuser:
+                #     temp_conversations.append(
+                #         Conversation(
+                #             character=f"{self.event.sender.nickname}(主人)({self.event.user_id}) {time_string}",
+                #             text=self.remove_duplicate_qq_usernames(
+                #                 self.cqat2str(
+                #                     str(self.event.message)[2:],
+                #                     match_qq=self.bot.config.bot_id,
+                #                 )
+                #             ),
+                #             sos=chatbot.sos,
+                #             eos=chatbot.eos,
+                #         )
+                #     )
+                # else:
+                #     temp_conversations.append(
+                #         Conversation(
+                #             character=f"{self.event.sender.nickname}({self.event.user_id}) {time_string}",
+                #             text=self.remove_duplicate_qq_usernames(
+                #                 self.cqat2str(
+                #                     str(self.event.message)[2:],
+                #                     match_qq=self.bot.config.bot_id,
+                #                 )
+                #             ),
+                #             sos=chatbot.sos,
+                #             eos=chatbot.eos,
+                #         )
+                #     )
+                if len(temp_conversations) > 0:
+                    chatbot.setup_prompt(chatbot.conversation2text(temp_conversations))
+                response = chain_dict.发言.chain(chatbot, first_node=True)
+                if response is not None:
+                    await self.bot.get_adapter("cqhttp").send(
+                        response.strip(),
+                        message_type="group",
+                        id_=AutoResponse.listen_group,
+                    )
                     response_conversation = Conversation(
                         character=chatbot.bot,
                         text=response.strip(),
@@ -128,40 +197,43 @@ class AutoResponse(Plugin):
                 or str(self.bot.config.bot_id) in self.event.message
                 or rand
             ):
-                current_time = time.time()
-                local_time = time.localtime(current_time)
-                time_string = time.strftime("%H:%M:%S", local_time)
-                if self.event.user_id == self.bot.config.superuser:
-                    temp_conversations.append(
-                        Conversation(
-                            character=f"{self.event.sender.nickname}(主人)({self.event.user_id}) {time_string}",
-                            text=self.remove_duplicate_qq_usernames(
-                                self.cqat2str(
-                                    str(self.event.message),
-                                    match_qq=self.bot.config.bot_id,
-                                )
-                            ),
-                            sos=chatbot.sos,
-                            eos=chatbot.eos,
-                        )
-                    )
-                else:
-                    temp_conversations.append(
-                        Conversation(
-                            character=f"{self.event.sender.nickname}({self.event.user_id}) {time_string}",
-                            text=self.remove_duplicate_qq_usernames(
-                                self.cqat2str(
-                                    str(self.event.message),
-                                    match_qq=self.bot.config.bot_id,
-                                )
-                            ),
-                        sos=chatbot.sos,
-                        eos=chatbot.eos
-                        )
-                    )
+                self.append_qqmessage2list(
+                    temp_conversations, message=str(self.event.message)
+                )
+                # current_time = time.time()
+                # local_time = time.localtime(current_time)
+                # time_string = time.strftime("%H:%M:%S ", local_time)
+                # if self.event.user_id == self.bot.config.superuser:
+                #     temp_conversations.append(
+                #         Conversation(
+                #             character=f"{self.event.sender.nickname}(主人)({self.event.user_id}) {time_string}",
+                #             text=self.remove_duplicate_qq_usernames(
+                #                 self.cqat2str(
+                #                     str(self.event.message),
+                #                     match_qq=self.bot.config.bot_id,
+                #                 )
+                #             ),
+                #             sos=chatbot.sos,
+                #             eos=chatbot.eos,
+                #         )
+                #     )
+                # else:
+                #     temp_conversations.append(
+                #         Conversation(
+                #             character=f"{self.event.sender.nickname}({self.event.user_id}) {time_string}",
+                #             text=self.remove_duplicate_qq_usernames(
+                #                 self.cqat2str(
+                #                     str(self.event.message),
+                #                     match_qq=self.bot.config.bot_id,
+                #                 )
+                #             ),
+                #             sos=chatbot.sos,
+                #             eos=chatbot.eos,
+                #         )
+                #     )
                 if len(temp_conversations) > 0:
                     chatbot.setup_prompt(chatbot.conversation2text(temp_conversations))
-                response = chain_dict.思考是否发言.chain(chatbot,first_node=True)
+                response = chain_dict.思考是否发言.chain(chatbot, first_node=True)
                 if response is not None:
                     await self.event.reply(response.strip())
                     response_conversation = Conversation(
@@ -181,31 +253,69 @@ class AutoResponse(Plugin):
                 if rand or random.randint(0, 100) <= AutoResponse.knowledge_prob:
                     self.add_hist2dataset()
             else:
-                current_time = time.time()
-                local_time = time.localtime(current_time)
-                time_string = time.strftime("%H:%M:%S", local_time)
-                if self.event.user_id == self.bot.config.superuser:
-                    temp_conversations.append(
-                        Conversation(
-                            character=f"{self.event.sender.nickname}(主人)({self.event.user_id}) {time_string}",
-                            text=self.event.message.get_plain_text(),
-                            sos=chatbot.sos,
-                            eos=chatbot.eos,
-                        )
-                    )
-                else:
-                    temp_conversations.append(
-                        Conversation(
-                            character=f"{self.event.sender.nickname}({self.event.user_id}) {time_string}",
-                            text=self.event.message.get_plain_text(),
-                            sos=chatbot.sos,
-                            eos=chatbot.eos,
-                        )
-                    )
+                self.append_qqmessage2list(
+                    temp_conversations, message=str(self.event.message)
+                )
+                # current_time = time.time()
+
+                # local_time = time.localtime(current_time)
+                # time_string = time.strftime("%H:%M:%S ", local_time)
+                # if self.event.user_id == self.bot.config.superuser:
+                #     temp_conversations.append(
+                #         Conversation(
+                #             character=f"{self.event.sender.nickname}(主人)({self.event.user_id}) {time_string}",
+                #             text=self.event.message.get_plain_text(),
+                #             sos=chatbot.sos,
+                #             eos=chatbot.eos,
+                #         )
+                #     )
+                # else:
+                #     temp_conversations.append(
+                #         Conversation(
+                #             character=f"{self.event.sender.nickname}({self.event.user_id}) {time_string}",
+                #             text=self.event.message.get_plain_text(),
+                #             sos=chatbot.sos,
+                #             eos=chatbot.eos,
+                #         )
+                #     )
                 for line in chatbot.conversation_hist:
                     print(line())
                 print(self.event.message)
                 AutoResponse.already_speak = False
+
+        # 数据收集
+        elif int(self.event.group_id) in AutoResponse.data_collection_groups:
+            f_name = f"./data_collection/{self.event.group_id}.txt"
+            key = str(self.event.group_id)
+            if key not in AutoResponse.data_collection_groups_count_dict:
+                AutoResponse.data_collection_groups_count_dict[key] = 1
+            else:
+                AutoResponse.data_collection_groups_count_dict[key] += 1
+            with open(f_name, "a", encoding="utf-8") as f:
+                if AutoResponse.data_collection_groups_count_dict[key] == 1:
+                    f.write("====群聊记录====\n\n")
+                    AutoResponse.data_collection_groups_conversation_dict[key] = []
+                self.append_qqmessage2list(
+                    AutoResponse.data_collection_groups_conversation_dict[key],
+                    message=str(self.event.message),
+                )
+                if (
+                    AutoResponse.data_collection_groups_count_dict[key]
+                    == AutoResponse.data_collection_turn
+                ):
+                    AutoResponse.data_collection_groups_count_dict[key] = 0
+                    f.write(
+                        chatbot.conversation2text(
+                            chatbot.change_converlist_eos(
+                                AutoResponse.data_collection_groups_conversation_dict[
+                                    key
+                                ],
+                                new_eos="<eos>\n\n",
+                                new_sos="<sos>",
+                            )
+                        )
+                    )
+                    f.write("====记录结束====\n\n")
 
     async def rule(self) -> bool:
         if self.event.adapter.name != "mirai" and self.event.adapter.name != "cqhttp":
@@ -283,3 +393,30 @@ class AutoResponse(Plugin):
     def reduce_newlines(self, text):
         reduced_text = re.sub(r"\n{3,}", "\n\n", text)
         return reduced_text
+
+    def append_qqmessage2list(self, conversation_list, message, superuser_n="主人"):
+        current_time = time.time()
+        local_time = time.localtime(current_time)
+        time_string = time.strftime("%H:%M:%S ", local_time)
+        if self.event.user_id == self.bot.config.superuser:
+            conversation_list.append(
+                Conversation(
+                    character=f"{self.event.sender.nickname}({superuser_n})({self.event.user_id}) {time_string}",
+                    text=self.remove_duplicate_qq_usernames(
+                        self.cqat2str(message, match_qq=self.bot.config.bot_id)
+                    ),
+                    sos=chatbot.sos,
+                    eos=chatbot.eos,
+                )
+            )
+        else:
+            conversation_list.append(
+                Conversation(
+                    character=f"{self.event.sender.nickname}({self.event.user_id}) {time_string}",
+                    text=self.remove_duplicate_qq_usernames(
+                        self.cqat2str(message, match_qq=self.bot.config.bot_id)
+                    ),
+                    sos=chatbot.sos,
+                    eos=chatbot.eos,
+                )
+            )

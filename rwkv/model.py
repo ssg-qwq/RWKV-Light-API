@@ -604,7 +604,7 @@ class RWKV(MyModule):
                     vw = vw.to(device=dev, non_blocking=True)
                     rw = rw.to(device=dev, non_blocking=True)
                     ow = ow.to(device=dev, non_blocking=True)
-                kmx = w[f'{att}key.weight_mx'] if wtype == torch.uint8 else x
+                kmx =   x
                 krx = w[f'{att}key.weight_rx'] if wtype == torch.uint8 else x
                 kmy = w[f'{att}key.weight_my'] if wtype == torch.uint8 else x
                 kry = w[f'{att}key.weight_ry'] if wtype == torch.uint8 else x
