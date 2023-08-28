@@ -33,7 +33,9 @@ python chatbot.py
 2. 在chatbot类中，会用conversation_hist变量来存储历史的对话内容，并与state对齐
 
 ---
+
 # 对话说明
+
 ```
         直接输入内容 --> 和机器人聊天，用\\n代表换行
         + --> 让机器人换个回答
