@@ -34,7 +34,7 @@ git clone https://github.com/ssg-qwq/RWKV-Light-API
 ```
 pip install -r requirements.txt
 ```
-3. 在目录下创建models文件夹，并将已有的rwkv模型保存
+3. 在目录下创建models文件夹，并将已有的rwkv模型保存（在 https://huggingface.co/BlinkDL/rwkv-4-world 下载官方模型）
 4. 更改myprompt.py来自定义prompt
 5. 调整代码中的配置。
 ```
