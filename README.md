@@ -30,7 +30,7 @@ RWKV-Runner不可编辑？ChatRWKV功能太少？那么来尝试一下RWKV-Light
 ```
 git clone https://github.com/ssg-qwq/RWKV-Light-API
 ```
-2. 确保电脑上有torch和cuda开发环境。
+2. 确保电脑上有torch和cuda开发环境，安装依赖。
 ```
 pip install -r requirements.txt
 ```
